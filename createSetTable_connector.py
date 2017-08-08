@@ -54,6 +54,7 @@ else:
 		LoCoefdRMS double, 
 		TelescopeId int,
 		index(SetNum)); """)
+	cnx.commit()
 
 #####################################################
 if myTable_Set in table_list:
@@ -64,5 +65,6 @@ else:
 		TelescopeId int NOT NULL,
 		WhenEntered TIMESTAMP,
 		index(TelescopeId)); """)
-cnx.commit()
-#cursor.close()
+	cnx.commit()
+cnx.close()
+cursor.close()
