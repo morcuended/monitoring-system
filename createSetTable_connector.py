@@ -30,7 +30,7 @@ except mysql.connector.Error as err:
     print(err)
 else:
   cursor=cnx.cursor()
-##########################################3
+#################################################
 cursor.execute("SHOW TABLES;")
 table_list = map(lambda x:x[0],cursor)
 #print table_list
@@ -54,6 +54,8 @@ else:
 		LoCoefdRMS double, 
 		TelescopeId int,
 		index(SetNum)); """)
+
+#####################################################
 if myTable_Set in table_list:
         print "Table %s already exists \n" %myTable_Set
 else:   
