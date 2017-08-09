@@ -107,8 +107,8 @@ void ExtractFF(){
   TCanvas *chi2Can = new TCanvas("chi2","Chi2",1000,500);
   //gStyle->SetOptFit(); //should show the fit parameters in the Canvas (but does not work!!)
  
-   FILE *fp = fopen("FFcoeff.dat","w");
-  
+  FILE *fp = fopen("FFcoeff.dat","w");
+  fprintf(fp,"%s\n","# HiIllumination | HiIlluminationRMS | LoIllumination | LoIlluminationRMS HiCoeff | HiCoeffRMS | LoCoeff | LoCoeffRMS"); 
   myc->Divide(2,1);
   TH1D *hchi2Hi = new TH1D("hchi2Hi","chi2_pix_coeff",600,0,30);   
   TH1D *hchi2Lo = new TH1D("hchi2Lo","chi2_pix_coeff",600,0,30);
@@ -127,34 +127,42 @@ void ExtractFF(){
     // create a vector to store quantiles values
     Double_t q[5];
     Double_t probs[5]={0.025,0.16,0.5,1-0.16,0.975};
+    Int_t HiEntries = ffHistHi -> GetEntries();
+    Int_t LoEntries = ffHistLo -> GetEntries();  
     	if (ffHistHi -> GetEntries()==0 || ffHistLo -> GetEntries()==0)
 	{
-        cout << "Pixel  " << PixId << "  has  "<< ffHistHi -> GetEntries() <<" (HiG) and "<< ffHistLo -> GetEntries() << " (LoG) entries" << endl;
-        }	
+        cout << "Pixel  " << PixId << "  has  "<< HiEntries <<" (Hi) and "<< LoEntries << " (Lo) entries" << endl;
+        //fprintf(fp,"%i,%i,%i %s\n",PixId,HiEntries,LoEntries,"**No entries**");
+	}	
         else
 	{
-	// Get the charge for the high gain
+	// Get the charge and coefficient of high gain channel
 	myc->cd(1);
     	ffHistHi -> Draw();
     	ffHistHi -> Fit("gaus","Q","");	
 	TF1 *fgausHi = ffHistHi->GetFunction("gaus");    	
 	Double_t meanHi = pixff -> GetHiChargeStats().GetMean();	 //Returns a double
     	Double_t rmsHi  = pixff -> GetHiChargeStats().GetRMS();
+	Double_t coefHi = ffHistHi -> GetMean();
+	Double_t coefRMSHi = ffHistHi -> GetRMS();
     	Double_t chi2Hi = fgausHi -> GetChisquare();         //Returns chi2 and dof
     	Int_t dofHi     = fgausHi -> GetNDF();
  	Double_t chi2dofHi = chi2Hi/dofHi; 
-	// Get the charge for the low gain
+	// Get the charge and coefficient of low gain channel
         myc->cd(2);
    	ffHistLo -> Draw();
   	ffHistLo -> Fit("gaus","Q",""); //Q option in the second argument for quiet run
 	TF1 *fgausLo = ffHistLo->GetFunction("gaus");   	
 	Double_t meanLo = pixff->GetLoChargeStats().GetMean();         //Returns a double
     	Double_t rmsLo  = pixff->GetLoChargeStats().GetRMS();
+	Double_t coefLo = ffHistLo -> GetMean();
+	Double_t coefRMSLo = ffHistLo -> GetRMS();
    	Double_t chi2Lo = fgausLo -> GetChisquare();         //Returns chi2 and dof	
     	Int_t dofLo     = fgausLo -> GetNDF();
 	Double_t chi2dofLo = chi2Lo/dofLo;
+	fprintf(fp,"%i,%f,%f,%f,%f,%f,%f,%f,%f\n",PixId,meanHi,rmsHi,meanLo,rmsLo,coefHi,coefRMSHi,coefLo,coefRMSLo);
 //
-//	cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<endl;
+	cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<","<< meanHi<<","<< rmsHi <<endl;
     	
     	chi2Can->cd();
 	hchi2Hi->Fill(chi2dofHi);
@@ -170,9 +178,9 @@ void ExtractFF(){
 		{
      		cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<endl;
 //		cin.ignore();
-		std::ostringstream fn;
-		fn <<"plotId" << PixId <<".pdf";
-		myc->SaveAs(fn.str().c_str());	
+	//	std::ostringstream fn;
+	//	fn <<"plotId" << PixId <<".pdf";
+	//	myc->SaveAs(fn.str().c_str());	
 		}
 	}
     }
@@ -200,17 +208,15 @@ void ExtractFF(){
 }
 
 
-
-
-void h12ascii (TH1* h)
-{
-   Int_t n = h->GetNbinsX();
-   for (Int_t i=1; i<=n; i++) {
-      printf("%g %g\n",
-             h->GetBinLowEdge(i)+h->GetBinWidth(i)/2,
-             h->GetBinContent(i));
-   }
-}
+//void h12ascii (TH1* h)
+//{
+//   Int_t n = h->GetNbinsX();
+//   for (Int_t i=1; i<=n; i++) {
+//      printf("%g %g\n",
+//             h->GetBinLowEdge(i)+h->GetBinWidth(i)/2,
+//             h->GetBinContent(i));
+//   }
+//}
 
 // Use it this way: ro)ot [0] .x h12ascii.C(hpx); > h2ascii.dat
 
