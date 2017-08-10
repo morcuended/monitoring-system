@@ -1,0 +1,28 @@
+
+mysql -u hessdev -h 141.34.130.13 -phess1u -P 3306 HESS_HESS1U
+
+
+
+mysql> SELECT COUNT(*) FROM SimpleTable WHERE Name="Camera1U_FlatFieldingCoefficients";
+
++----------+
+| COUNT(*) |
++----------+
+|        1 |
++----------+
+1 row in set (0.00 sec)
+
+
+mysql> select * from SimpleTableColumn where SimpleTable=1522;
+mysql> select * from Camera1U_HV limit 20 offset 15;
+mysql> select * from SimpleTableColumn where SimpleTable=1522;
+mysql> select * from SimpleTable;
+
+join part of several tables:
+select * from Camera1U_DrawerList inner join Camera1U_Drawer on Camera1U_Drawer.drawerId=Camera1U_DrawerList.drawerId limit 10;
+
+delete rows/entries from a table:
+  mysql> delete from Test_Camera1U_FFCoeff_Set where SetNum=1;
+
+
+
