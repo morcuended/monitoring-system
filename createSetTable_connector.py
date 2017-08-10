@@ -132,15 +132,21 @@ if not SetNum in SetNum_list:
 # Write entry into SimpleTable
 
 cursor.execute("""SELECT COUNT(*) FROM information_schema.columns WHERE table_name="%s";"""%myTable)
-print(cursor.fetchall())     #YOU ARE HEREEEE!!!
+column_num = map(lambda x:x[0],cursor)
+max_col=column_num[0]-2
 
-#I want to get the number of columns in myTable should be 16-2(entry and SetNum):14
 
-#cursor.execute("""insert into SimpleTable set 
-#		Name="%s",
-#		MaxColumns="%i"
-#		SqlTableSet="%s",
-#		SqlTableData="%s",
-#		SqlSetColumn="SetNum"
-#		SqlSetColumnData="SetNum";"""%(myTable,myTable_Set,myTable))
+#set condition if name=myTable is in SimpleTable
+cursor.execute("SHOW TABLES;")
+table_list = map(lambda x:x[0],cursor)
+#print table_list
+
+
+cursor.execute("""insert into SimpleTable set 
+		Name="%s",
+		MaxColumns="%i",
+		SqlTableSet="%s",
+		SqlTableData="%s",
+		SqlSetColumn="SetNum",
+		SqlSetColumnData="SetNum";"""%(myTable,max_col,myTable_Set,myTable))
 
