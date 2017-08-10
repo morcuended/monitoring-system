@@ -11,6 +11,7 @@
 #include <TF1.h>
 //#include <TStyle.h> //DM (I add this)
 //#include <TCanvas.h> //DM
+#include "TPaveStats.h" //DM
 
 // HESS
 #include <sashfile/HandlerC.hh>
@@ -108,10 +109,25 @@ void ExtractFF(){
   //gStyle->SetOptFit(); //should show the fit parameters in the Canvas (but does not work!!)
  
   FILE *fp = fopen("FFcoeff.dat","w");
-  fprintf(fp,"%s\n","# HiIllumination | HiIlluminationRMS | LoIllumination | LoIlluminationRMS HiCoeff | HiCoeffRMS | LoCoeff | LoCoeffRMS"); 
+
+  fprintf(fp,"%s\n","# PixId | HiEntries | LoEntries | HiIllumination | HiIlluminationRMS | LoIllumination | LoIlluminationRMS HiCoeff | HiCoeffRMS | LoCoeff | LoCoeffRMS | Chi2Hi | Chi2Lo"); 
   myc->Divide(2,1);
   TH1D *hchi2Hi = new TH1D("hchi2Hi","chi2_pix_coeff",600,0,30);   
   TH1D *hchi2Lo = new TH1D("hchi2Lo","chi2_pix_coeff",600,0,30);
+  //Defining variables
+  Double_t meanHi;	 //Returns a double
+  Double_t rmsHi;
+  Double_t coefHi;
+  Double_t coefRMSHi;
+  Double_t chi2Hi;
+  Double_t chi2dofHi; 
+
+  Double_t meanLo;	 //Returns a double
+  Double_t rmsLo;
+  Double_t coefLo;
+  Double_t coefRMSLo;
+  Double_t chi2Lo; 
+  Double_t chi2dofLo;
 
   for (Sash::Pointer<Sash::Pixel> pix = CT1->beginPixel(); pix != CT1->endPixel(); ++pix) 
     { //looping over all the pixel to extract the values
@@ -129,11 +145,25 @@ void ExtractFF(){
     Double_t probs[5]={0.025,0.16,0.5,1-0.16,0.975};
     Int_t HiEntries = ffHistHi -> GetEntries();
     Int_t LoEntries = ffHistLo -> GetEntries();  
-    	if (ffHistHi -> GetEntries()==0 || ffHistLo -> GetEntries()==0)
+    	if (ffHistHi -> GetEntries()==0 )
 	{
+	meanHi = -1.;	 //Returns a double
+    	rmsHi  = -1.;
+	coefHi = .0;
+	coefRMSHi = .0;
+    	chi2Hi = .0; 
         cout << "Pixel  " << PixId << "  has  "<< HiEntries <<" (Hi) and "<< LoEntries << " (Lo) entries" << endl;
-        //fprintf(fp,"%i,%i,%i %s\n",PixId,HiEntries,LoEntries,"**No entries**");
-	}	
+        }
+	else if (ffHistLo -> GetEntries()==0)
+	{
+	meanLo = -1.;	 //Returns a double
+    	rmsLo  = -1.;
+	coefLo = .0;
+	coefRMSLo = .0;
+    	chi2Lo = .0; 
+	cout << "Pixel  " << PixId << "  has  "<< HiEntries <<" (Hi) and "<< LoEntries << " (Lo) entries" << endl;
+	//fprintf(fp,"%i,%i,%i %s\n",PixId,HiEntries,LoEntries,"**No entries**");
+	}
         else
 	{
 	// Get the charge and coefficient of high gain channel
@@ -141,26 +171,38 @@ void ExtractFF(){
     	ffHistHi -> Draw();
     	ffHistHi -> Fit("gaus","Q","");	
 	TF1 *fgausHi = ffHistHi->GetFunction("gaus");    	
-	Double_t meanHi = pixff -> GetHiChargeStats().GetMean();	 //Returns a double
-    	Double_t rmsHi  = pixff -> GetHiChargeStats().GetRMS();
-	Double_t coefHi = ffHistHi -> GetMean();
-	Double_t coefRMSHi = ffHistHi -> GetRMS();
-    	Double_t chi2Hi = fgausHi -> GetChisquare();         //Returns chi2 and dof
+	meanHi = pixff -> GetHiChargeStats().GetMean();	 //Returns a double
+    	rmsHi  = pixff -> GetHiChargeStats().GetRMS();
+	coefHi = ffHistHi -> GetMean();
+	coefRMSHi = ffHistHi -> GetRMS();
+    	chi2Hi = fgausHi -> GetChisquare(); 
+
+	//Double_t meanHi = pixff -> GetHiChargeStats().GetMean();	 //Returns a double
+    	//Double_t rmsHi  = pixff -> GetHiChargeStats().GetRMS();
+	//Double_t coefHi = ffHistHi -> GetMean();
+	//Double_t coefRMSHi = ffHistHi -> GetRMS();
+    	//Double_t chi2Hi = fgausHi -> GetChisquare();         //Returns chi2 and dof
     	Int_t dofHi     = fgausHi -> GetNDF();
- 	Double_t chi2dofHi = chi2Hi/dofHi; 
+ 	chi2dofHi = chi2Hi/dofHi; 
 	// Get the charge and coefficient of low gain channel
         myc->cd(2);
    	ffHistLo -> Draw();
   	ffHistLo -> Fit("gaus","Q",""); //Q option in the second argument for quiet run
 	TF1 *fgausLo = ffHistLo->GetFunction("gaus");   	
-	Double_t meanLo = pixff->GetLoChargeStats().GetMean();         //Returns a double
-    	Double_t rmsLo  = pixff->GetLoChargeStats().GetRMS();
-	Double_t coefLo = ffHistLo -> GetMean();
-	Double_t coefRMSLo = ffHistLo -> GetRMS();
-   	Double_t chi2Lo = fgausLo -> GetChisquare();         //Returns chi2 and dof	
+	meanLo = pixff->GetLoChargeStats().GetMean();         //Returns a double
+    	rmsLo  = pixff->GetLoChargeStats().GetRMS();
+	coefLo = ffHistLo -> GetMean();
+	coefRMSLo = ffHistLo -> GetRMS();
+   	chi2Lo = fgausLo -> GetChisquare();
+
+	//Double_t meanLo = pixff->GetLoChargeStats().GetMean();         //Returns a double
+    	//Double_t rmsLo  = pixff->GetLoChargeStats().GetRMS();
+	//Double_t coefLo = ffHistLo -> GetMean();
+	//Double_t coefRMSLo = ffHistLo -> GetRMS();
+   	//Double_t chi2Lo = fgausLo -> GetChisquare();         //Returns chi2 and dof	
     	Int_t dofLo     = fgausLo -> GetNDF();
-	Double_t chi2dofLo = chi2Lo/dofLo;
-	fprintf(fp,"%i,%f,%f,%f,%f,%f,%f,%f,%f\n",PixId,meanHi,rmsHi,meanLo,rmsLo,coefHi,coefRMSHi,coefLo,coefRMSLo);
+	chi2dofLo = chi2Lo/dofLo;
+//	fprintf(fp,"%i,%i,%i,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",PixId,HiEntries,LoEntries,meanHi,rmsHi,meanLo,rmsLo,coefHi,coefRMSHi,coefLo,coefRMSLo,chi2dofHi,chi2dofLo);
 //
 	cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<","<< meanHi<<","<< rmsHi <<endl;
     	
@@ -183,12 +225,16 @@ void ExtractFF(){
 	//	myc->SaveAs(fn.str().c_str());	
 		}
 	}
+   fprintf(fp,"%i,%i,%i,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",PixId,HiEntries,LoEntries,meanHi,rmsHi,meanLo,rmsLo,coefHi,coefRMSHi,coefLo,coefRMSLo,chi2dofHi,chi2dofLo);
     }
   //  hchi2   -> GetQuantiles(5,q,probs);
    // cout<<q<<endl;
+   //
     hchi2Hi -> Draw();
     hchi2Lo -> SetLineColor(kRed);
     hchi2Lo -> Draw("same");
+//    tps1->Draw("same");
+//    tps2->Draw("same");
     chi2Can -> BuildLegend();
     chi2Can -> Update();
 //  	vector<double> quantiles( TH1F* h ){
@@ -202,22 +248,6 @@ void ExtractFF(){
     		cout << " quantile " << i << " " << qLo[i] << endl;
         	r[i] = qLo[i];
         	}
-  
   fclose(fp);
-
 }
-
-
-//void h12ascii (TH1* h)
-//{
-//   Int_t n = h->GetNbinsX();
-//   for (Int_t i=1; i<=n; i++) {
-//      printf("%g %g\n",
-//             h->GetBinLowEdge(i)+h->GetBinWidth(i)/2,
-//             h->GetBinContent(i));
-//   }
-//}
-
-// Use it this way: ro)ot [0] .x h12ascii.C(hpx); > h2ascii.dat
-
 
