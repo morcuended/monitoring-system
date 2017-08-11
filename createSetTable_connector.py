@@ -19,7 +19,9 @@ config = {
 
 try:
   cnx = mysql.connector.connect(**config)
-  print("You are now connected \n")
+  print "##################################################"
+  print("You are now connected")
+  print "--------------------------------------------------"
 except mysql.connector.Error as err:
   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
     print("Something is wrong with your user name or password \n")
@@ -29,7 +31,7 @@ except mysql.connector.Error as err:
     print(err)
 else:
   cursor=cnx.cursor()
-##########################################3
+##########################################
 cursor.execute("SHOW TABLES;")
 table_list = map(lambda x:x[0],cursor)
 #print table_list
@@ -115,6 +117,7 @@ for row in data:
 			Chi2ndfLo=%f,
 			TelescopeId=%i;"""%(PixId,RunNumber,SetNum,HiIllumination,HiIlluminationRMS,LoIllumination,LoIlluminationRMS,
 			HiCoeff,HiCoeffRMS,LoCoeff,LoCoeffRMS,Chi2ndfHi,Chi2ndfLo,TelescopeId))
+	cnx.commit() 
 
 #Loop over the rows of data and store each value into the corresponding column of the table
 #Check first if a certain SetNum is already in the table 
@@ -128,25 +131,33 @@ if not SetNum in SetNum_list:
 	cursor.execute("""insert into Test_Camera1U_FFCoeff_Set set 
 			SetNum=%i,
 			TelescopeId=%i;"""%(SetNum,TelescopeId))
+	cnx.commit() 
 
-# Write entry into SimpleTable
+# Write entry into SimpleTable ()
 
+#Get the number of columns in myTable 
 cursor.execute("""SELECT COUNT(*) FROM information_schema.columns WHERE table_name="%s";"""%myTable)
 column_num = map(lambda x:x[0],cursor)
 max_col=column_num[0]-2
 
 
 #set condition if name=myTable is in SimpleTable
-cursor.execute("SHOW TABLES;")
-table_list = map(lambda x:x[0],cursor)
-#print table_list
 
+cursor.execute("""SELECT COUNT(*) FROM SimpleTable WHERE Name="%s";"""%myTable)
+is_it_there = map(lambda x:x[0],cursor)
 
-cursor.execute("""insert into SimpleTable set 
+if is_it_there[0] == 0:
+	cursor.execute("""insert into SimpleTable set 
 		Name="%s",
 		MaxColumns="%i",
 		SqlTableSet="%s",
 		SqlTableData="%s",
 		SqlSetColumn="SetNum",
 		SqlSetColumnData="SetNum";"""%(myTable,max_col,myTable_Set,myTable))
+	print "Table %s has just been written into SimpleTable\n"%myTable
+	cnx.commit() 
+else: print "Table %s is already in SimpleTable \n"%myTable
+
+
+print "##################################################"
 
