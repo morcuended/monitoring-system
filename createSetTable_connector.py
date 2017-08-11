@@ -42,8 +42,9 @@ else:
 	cursor.execute("""CREATE TABLE Test_Camera1U_FFCoeff (
 		entry int NOT NULL auto_increment PRIMARY KEY,
 		SetNum int NOT NULL,
-		RunNumber int NOT NULL,
+		RunNumber int,
 		RunStarts DATETIME,
+		TelescopeId int,
 		pixel int NOT NULL,
 		HiIllumination double,
 		HiIlluminationRMS double,
@@ -55,7 +56,6 @@ else:
 		LoCoeffRMS double,
 		Chi2ndfHi double,
 		Chi2ndfLo double, 
-		TelescopeId int,
 		index(SetNum)); """)
 	print "Table %s just created \n" %myTable
 	cnx.commit() # Make sure data is committed to the database
@@ -65,27 +65,54 @@ if myTable_Set in table_list:
 else:   
 	cursor.execute("""CREATE TABLE Test_Camera1U_FFCoeff_Set (
 		SetNum int NOT NULL auto_increment PRIMARY KEY,
-		TelescopeId int NOT NULL,
+		TelescopeId int,
 		WhenEntered TIMESTAMP,
 		index(TelescopeId)); """)
 	cnx.commit() 
 	print "Table %s just created \n" %myTable_Set
-#cursor.close()
-
-
 
 #cursor.execute("""insert into Test_Camera1U_FFCoeff_Set set SetNum=2,Comments="This is %s table", TelescopeId=1;"""%myTable)
-
 #cursor.execute("insert into SimpleTable set Name=myTable;")
-
 
 #Fill tables
 data=np.genfromtxt("FFcoeff.dat",skip_header=1,comments="#",delimiter=",")
-#print(data[1,])
 
-SetNum = 1
+# defining dummy numbers
+#SetNum = 1
 RunNumber = 128000
 TelescopeId= 1
+
+	#Loop over the rows of data and store each value into the corresponding column of the table
+	#Check first if a certain SetNum is already in the table 
+#cursor.execute("select * from %s"%myTable_Set)
+#SetNum_list = map(lambda x:x[0],cursor)
+	#print SetNum_list
+
+
+#cursor.execute("select SetNum from %s"%myTable_Set)
+##print cursor
+##print cursor.fetchall()[0][1]
+#SetNum = map(lambda x:x[0],cursor)
+#SetNum = SetNum[0]
+
+
+
+
+#if not SetNum in SetNum_list:
+cursor.execute("""insert into Test_Camera1U_FFCoeff_Set set 
+		TelescopeId=%i;"""%(TelescopeId))
+cnx.commit() 
+
+cursor.execute("select SetNum from %s"%myTable_Set)
+#print cursor
+#print cursor.fetchall()[0][1]
+SetNum = map(lambda x:x[0],cursor)
+#print SetNum,"\n"
+SetNum = SetNum[len(SetNum)-1] #get the last element of the list (ie the last SetNum entry in *_Set table)
+#print SetNum,"\n"
+
+
+
 
 for row in data:
 	PixId=row[0]
@@ -119,19 +146,18 @@ for row in data:
 			HiCoeff,HiCoeffRMS,LoCoeff,LoCoeffRMS,Chi2ndfHi,Chi2ndfLo,TelescopeId))
 	cnx.commit() 
 
-#Loop over the rows of data and store each value into the corresponding column of the table
-#Check first if a certain SetNum is already in the table 
+	#Loop over the rows of data and store each value into the corresponding column of the table
+	#Check first if a certain SetNum is already in the table 
 cursor.execute("select * from %s"%myTable_Set)
 #print cursor
 #print cursor.fetchall()[0][1]
 SetNum_list = map(lambda x:x[0],cursor)
 #print SetNum_list
 
-if not SetNum in SetNum_list:
-	cursor.execute("""insert into Test_Camera1U_FFCoeff_Set set 
-			SetNum=%i,
-			TelescopeId=%i;"""%(SetNum,TelescopeId))
-	cnx.commit() 
+#if not SetNum in SetNum_list:
+#	cursor.execute("""insert into Test_Camera1U_FFCoeff_Set set 
+#			TelescopeId=%i;"""%(SetNum,TelescopeId))
+#	cnx.commit() 
 
 # Write entry into SimpleTable ()
 
@@ -157,7 +183,7 @@ if is_it_there[0] == 0:
 	print "Table %s has just been written into SimpleTable\n"%myTable
 	cnx.commit() 
 else: print "Table %s is already in SimpleTable \n"%myTable
-
-
+cnx.close()
+cursor.close()
 print "##################################################"
 
