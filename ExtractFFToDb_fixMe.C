@@ -82,7 +82,6 @@ void ExtractFFToDb_fixMe(std::string file)
 		std::cout << "Cannot connect to the file!!!!" << std::endl;
 	}
 
-
 	Sash::DataSet *ds_run = han->GetDataSet("run"); 
 	ds_run->GetEntry(0); //start loading the useful informations
 	Sash::HESSArray *fHess = &Sash::HESSArray::GetHESSArray();
@@ -260,14 +259,9 @@ void ExtractFFToDb_fixMe(std::string file)
 		    	chi2Can->cd();
 			hchi2Hi->Fill(chi2dofHi);
 			hchi2Lo->Fill(chi2dofLo);
-		
-			//        hchi2->Draw();
 			
-			//	chi2Can->Update();
-		
-			//	myc->Update();
-			
-		    	if (chi2Hi/dofHi>1.75 || chi2Hi/dofHi<0.55 || chi2Lo/dofLo>1.75 || chi2Lo/dofLo<0.55) // at 95% CI
+			// Setting limits on the chi2-value (this depends on the telescope and gain channel)
+		    	if (chi2Hi/dofHi>1.75 || chi2Hi/dofHi<0.55 || chi2Lo/dofLo>1.75 || chi2Lo/dofLo<0.55) // at 95% CI for CT1
 				{
 		     		cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<endl;
 				//	cin.ignore();
@@ -276,8 +270,7 @@ void ExtractFFToDb_fixMe(std::string file)
 				//	myc->SaveAs(fn.str().c_str());	
 				}
 			}
-
-			// Filling array data which contains all coefficients that will be stored into the database;
+			// Filling the array which contains all data that will be stored into the database;
 			data[PixId][0] = runNumber;
 			data[PixId][1] = utcT.GetString(); 
 			data[PixId][2] = PixId;
@@ -301,8 +294,3 @@ void ExtractFFToDb_fixMe(std::string file)
 		}
 	fConnection->close();
 }
-
-
-
-
-
