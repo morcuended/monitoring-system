@@ -102,35 +102,29 @@ void ExtractFFToDb_fixMe(std::string file)
 	std::cout << "RunNumber: " << runNumber << " - RunTime" ;
 	CurRunStartTime.Print();
 
-	//Creating an iterator object to iterate on the telescopes found in the runheader
-	//
-	//
-
-  TCanvas *myc = new TCanvas("myc","HiG_LoG",1000,500);
-  TCanvas *chi2Can = new TCanvas("chi2","Chi2",1000,500);
-
-
-  myc->Divide(2,1);
-  TH1D *hchi2Hi = new TH1D("hchi2Hi","chi2_pix_coeff",600,0,30);   
-  TH1D *hchi2Lo = new TH1D("hchi2Lo","chi2_pix_coeff",600,0,30);
+	//Create Canvas and histograms that will be used in the next loop
+  	TCanvas *myc = new TCanvas("myc","HiG_LoG",1000,500);
+  	TCanvas *chi2Can = new TCanvas("chi2","Chi2",1000,500);
+  	myc->Divide(2,1);
+  	TH1D *hchi2Hi = new TH1D("hchi2Hi","chi2_pix_coeff",600,0,30);   
+  	TH1D *hchi2Lo = new TH1D("hchi2Lo","chi2_pix_coeff",600,0,30);
  
-  //Defining variables
-  Double_t meanHi;	 
-  Double_t rmsHi;
-  Double_t coefHi;
-  Double_t coefRMSHi;
-  Double_t chi2Hi;
-  Double_t chi2dofHi; 
+  	//Defining variables
+  	Double_t meanHi;	 
+  	Double_t rmsHi;
+  	Double_t coefHi;
+  	Double_t coefRMSHi;
+  	Double_t chi2Hi;
+  	Double_t chi2dofHi; 
 
-  Double_t meanLo;	 
-  Double_t rmsLo;
-  Double_t coefLo;
-  Double_t coefRMSLo;
-  Double_t chi2Lo; 
-  Double_t chi2dofLo;
+  	Double_t meanLo;	 
+  	Double_t rmsLo;
+  	Double_t coefLo;
+  	Double_t coefRMSLo;
+  	Double_t chi2Lo; 
+  	Double_t chi2dofLo;
 
-
-
+        //Creating an iterator object to iterate on the telescopes found in the runheader
 	const Sash::PointerSet<Sash::Telescope> &tellist = fHess->Get<Sash::RunHeader>()->GetTelsInRun();
 	for (Sash::PointerSet<Sash::Telescope>::iterator tel = tellist.begin(), tel_end = tellist.end();
 		tel!=tel_end; ++tel) 
@@ -145,6 +139,7 @@ void ExtractFFToDb_fixMe(std::string file)
 		}
 
 		//Loading the information for the selected telescope
+
 		Sash::DataSet *ds = han->GetDataSet(Form("CT%i_FlatFieldCoeff",telId)); 
 		ds->GetEntry(0);
 
@@ -162,7 +157,6 @@ void ExtractFFToDb_fixMe(std::string file)
 		}
 
 		// Getting the runnumber and the time at which the run started
-		//
 
 		const Sash::TelescopeRunHeader *CT_runHead = CT->Get< Sash::TelescopeRunHeader > ("");
 		UInt_t runNumber = CT_runHead->GetRunNumber();
@@ -192,17 +186,12 @@ void ExtractFFToDb_fixMe(std::string file)
 
 		simpletable::SimpleData data(960,13);	//Table where will be stored the parameters for each pixel
 
-
 		CT_ff->DisplayFFCharge(); //needed to load the values from the files (Dunno why...)
 		std::cout << "Filling the coefficients to the database" << std::endl;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
 		char *sep = "\t";
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//		Set me if you can...
-
+		// Loop over the pixels	
 		  for (Sash::Pointer<Sash::Pixel> pix = CT->beginPixel(); pix != CT->endPixel(); ++pix) 
 		    { //looping over all the pixel to extract the values
 		    Int_t PixId = (*pix).GetConfig()->GetPixelID(); //PixId is an int that represents the pixel number
@@ -265,34 +254,30 @@ void ExtractFFToDb_fixMe(std::string file)
 		   	chi2Lo = fgausLo -> GetChisquare();
 		    	Int_t dofLo     = fgausLo -> GetNDF();
 			chi2dofLo = chi2Lo/dofLo;
-		//
+			//
 			cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<endl;
 		    	
 		    	chi2Can->cd();
 			hchi2Hi->Fill(chi2dofHi);
 			hchi2Lo->Fill(chi2dofLo);
 		
-		//        hchi2->Draw();
+			//        hchi2->Draw();
+			
+			//	chi2Can->Update();
 		
-		//	chi2Can->Update();
-		
-		//	myc->Update();
+			//	myc->Update();
 			
 		    	if (chi2Hi/dofHi>1.75 || chi2Hi/dofHi<0.55 || chi2Lo/dofLo>1.75 || chi2Lo/dofLo<0.55) // at 95% CI
 				{
 		     		cout <<"Pixel "<<PixId <<", chi2: " << chi2Hi/dofHi <<" and "<< chi2Lo/dofLo <<endl;
-		//		cin.ignore();
-			//	std::ostringstream fn;
-			//	fn <<"plotId" << PixId <<".pdf";
-			//	myc->SaveAs(fn.str().c_str());	
+				//	cin.ignore();
+				//	std::ostringstream fn;
+				//	fn <<"plotId" << PixId <<".pdf";
+				//	myc->SaveAs(fn.str().c_str());	
 				}
 			}
-  // fprintf(fp,"%i,%i,%i,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",PixId,HiEntries,LoEntries,meanHi,rmsHi,meanLo,rmsLo,coefHi,coefRMSHi,coefLo,coefRMSLo,chi2dofHi,chi2dofLo);
-   
 
-
-////////////////// Here data array must be filled.
-
+			// Filling array data which contains all coefficients that will be stored into the database;
 			data[PixId][0] = runNumber;
 			data[PixId][1] = utcT.GetString(); 
 			data[PixId][2] = PixId;
@@ -306,33 +291,10 @@ void ExtractFFToDb_fixMe(std::string file)
 			data[PixId][10] = coefRMSLo;
 			data[PixId][11] = chi2dofHi;
 			data[PixId][12] = chi2dofLo;
-	
-	 } //end of for loop
-
-
-//		for (int n=0;n<960;n++)
-//		{
-//		data[n][0] = runNumber;
-//		data[n][1] = utcT.GetString(); //RunStarts?
-//		data[n][2] = telId
-//		//data[n][3] =
-//		//data[n][4] = 
-//		//data[n][5] =
-//		//data[n][6] =
-//		//data[n][7] = 
-//		//data[n][8] = 
-//		//data[n][9] = 
-//		//data[n][10] =
-//		//data[n][11] = 
-//		//data[n][12] = 
-//		}
-
-		//data[1][0] = runNumber;
-		//....
-
+	 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-		table.read_and_put(data, simpletable::SCV(1,(int)(telId))); //filling the tables
+		table.read_and_put(data, simpletable::SCV(1,(int)(telId))); // Filling myTable and myTable_Set of the database  
 
 		  //ds->~DataSet(); 
 		  //CT->~Telescope();
