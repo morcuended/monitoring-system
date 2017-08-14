@@ -167,15 +167,23 @@ cursor.execute("""select COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS where TABLE
 columns=map(lambda x:x[0],cursor)
 #print columns[0]
 
-#Creating SimpleTableColumn
-cursor.execute("""insert into SimpleTableColumn set 
+#Adding entries to SimpleTableColumn corresponding to myTable;
+
+cursor.execute("""select SimpleTable from SimpleTableColumn;""")
+entries=map(lambda x:x[0],cursor)
+#print columns[0]
+
+if SimpleTable_num in entries:
+	print "Entries of %s already exist in SimpleTableColumn\n"%myTable
+else:
+	cursor.execute("""insert into SimpleTableColumn set 
 		SqlColumn="TelescopeId",
 		SimpleTable="%i",
 		ColumnType="ID",
 		nColumn=1,
 		Description="Telescope Id for this entry/set";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="WhenEntered",
                 SimpleTable="%i",
                 ColumnType="Aux",
@@ -183,14 +191,14 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="time",
                 Description="Date of creation of this entry/set";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="RunNumber",
                 SimpleTable="%i",
                 ColumnType="Data",
                 nColumn=1,	
                 Description="RunNumber used for the calculation of the coefficients";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="RunStarts",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -198,14 +206,14 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="time",
                 Description="When did the run start";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="pixel",
                 SimpleTable="%i",
                 ColumnType="Data",
                 nColumn=3,
                 Description="Pixel position of the given coefficient";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="HiIllumination",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -213,7 +221,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated illumination for the pixel (high-gain)";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="HiIlluminationRMS",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -221,7 +229,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",	
                 Description="Error on the illumination for high-gain";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="LoIllumination",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -229,7 +237,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated illumination for the pixel (low-gain)";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="LoIlluminationRMS",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -237,7 +245,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",	
                 Description="Error on the illumination for low-gain";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="HiCoeff",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -245,7 +253,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated coeff. for high-gain";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="HiCoeffRMS",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -253,7 +261,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated error on coeff. for high-gain";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="LoCoeff",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -261,7 +269,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated coeff. for low-gain";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="LoCoeffRMS",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -269,7 +277,7 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated error on coeff. for low-gain";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="Chi2ndfHi",
                 SimpleTable="%i",
                 ColumnType="Data",
@@ -277,23 +285,15 @@ cursor.execute("""insert into SimpleTableColumn set
 		ValueType="real",
                 Description="Calculated chi2/ndf for the gaussian fit (high-gain)";"""%(SimpleTable_num))
 
-cursor.execute("""insert into SimpleTableColumn set 
+	cursor.execute("""insert into SimpleTableColumn set 
                 SqlColumn="Chi2ndfLo",
                 SimpleTable="%i",
                 ColumnType="Data",
                 nColumn=13,
 		ValueType="real",
                 Description="Calculated chi2/ndf for the gaussian fit (low-gain) ";"""%(SimpleTable_num))
-
-
-
-
-
-
-
-
-
-cnx.commit() 
+	cnx.commit() 
+	print "Entries of %s have just been added to SimpleTableColumn\n"%myTable
 
 cnx.close()
 cursor.close()
