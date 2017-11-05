@@ -1,4 +1,2 @@
-# monitoring-system
-Monitoring system
-
-This is a monitoring system involving databases.
+# Monitoring system
+Monitoring system for calibration coefficients of the recently upgraded H.E.S.S. I cameras.
